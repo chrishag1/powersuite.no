@@ -1,0 +1,220 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Produkter
+{% endblock %}
+
+{% block main %}
+    <div class="bg-dark py-4">
+        <div class="container d-flex flex-wrap justify-content-center gap-3">
+            <button class="btn btn-outline-light fw-bold px-4 py-2 fs-5 toggle-btn toggle-all">Alle</button>
+            <button class="btn btn-outline-primary fw-bold px-4 py-2 fs-5 toggle-btn" data-brand="playstation">PlayStation</button>
+            <button class="btn btn-outline-success fw-bold px-4 py-2 fs-5 toggle-btn" data-brand="xbox">Xbox</button>
+            <button class="btn btn-outline-danger fw-bold px-4 py-2 fs-5 toggle-btn" data-brand="nintendo">Nintendo</button>
+
+            <select id="butikk-velger" class="form-select">
+                {% for butikk in alle_butikker %}
+                    <option value="{{ butikk }}">{{ butikk }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="text" id="produkt-sok" class="form-control ms-lg-3 mt-2 mt-lg-0" placeholder="Søk etter produkt..." style="max-width: 250px;">
+
+        </div>
+    </div>
+
+    <script>
+         const allButton = document.querySelector('.toggle-all');
+          const filterButtons = [...document.querySelectorAll('.toggle-btn')].filter(btn => !btn.classList.contains('toggle-all'));
+
+          // 🔍 Les 'brands' fra URL og returner som array
+          function getBrandsFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const brandsParam = params.get('merker');
+            if (!brandsParam) return [];
+
+            try {
+              return JSON.parse(decodeURIComponent(brandsParam));
+            } catch (e) {
+              console.error("Ugyldig 'brands' parameter i URL:", e);
+              return [];
+            }
+          }
+
+        function getStoreFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            const storeParam = params.get('butikker');
+            if (!storeParam) return [];
+
+            try {
+                return JSON.parse(decodeURIComponent(storeParam));
+            } catch (e) {
+                console.error("Ugyldig 'butikker' parameter i URL:", e);
+                return [];
+            }
+
+        }
+
+        // 🚀 Sett aktiv knapp basert på URL
+        function applyActiveButtonsFromURL() {
+          const selectedBrands = getBrandsFromURL();
+
+          filterButtons.forEach(btn => {
+            const brand = btn.dataset.brand;
+            if (selectedBrands.includes(brand)) {
+              btn.classList.add('active');
+            } else {
+              btn.classList.remove('active');
+            }
+          });
+
+          updateAllButtonState();
+
+          // 👉 Sett valgt butikk basert på `butikker`-parameteren
+          const params = new URLSearchParams(window.location.search);
+          const butikkerParam = params.get('butikker');
+          if (butikkerParam) {
+            try {
+              const butikker = JSON.parse(decodeURIComponent(butikkerParam));
+              if (butikker.length > 0) {
+                document.getElementById('butikk-velger').value = butikker[0];
+              }
+            } catch (e) {
+              console.error("Ugyldig 'butikker' parameter i URL:", e);
+            }
+          }
+        }
+
+      // ✅ Aktiver alle filterknapper
+      function activateAllButtons() {
+        filterButtons.forEach(b => b.classList.add('active'));
+        allButton.classList.add('active');
+      }
+
+      function updateAllButtonState() {
+        const allActive = filterButtons.every(btn => btn.classList.contains('active'));
+        if (allActive) {
+          allButton.classList.add('active');
+        } else {
+          allButton.classList.remove('active');
+        }
+      }
+
+      // 🔁 Naviger til ny URL med ett eller flere merke
+      function setBrands(brands) {
+          const butikknavn = [document.getElementById("butikk-velger").value];
+          const brandString = encodeURIComponent(JSON.stringify(brands));
+          const butikkString = encodeURIComponent(JSON.stringify(butikknavn));
+          //console.log(`butikker=${butikkString}`)
+
+          const newUrl = `?merker=${brandString}&butikker=${butikkString}`;
+          window.location.href = newUrl;
+      }
+
+      // 🖱️ Event Listeners
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const selectedBrand = btn.dataset.brand;
+          setBrands([selectedBrand]); // ⬅️ Bare én merke om gangen
+        });
+      });
+
+      allButton.addEventListener('click', () => {
+        setBrands(["playstation", "xbox", "nintendo"]);
+      });
+
+      // 🚀 Aktiver Select2 med autofokus når åpnet
+        $(document).ready(function () {
+            const $butikkVelger = $('#butikk-velger');
+
+            $butikkVelger.select2({
+                placeholder: "Velg butikk...",
+                width: 'style' // beholder bredden satt i HTML/CSS
+            });
+
+            // Autofokus på søkefeltet i dropdown når den åpnes
+            $butikkVelger.on('select2:open', function () {
+                let searchBox = document.querySelector('.select2-container--open .select2-search__field');
+                if (searchBox) {
+                    searchBox.focus();
+                }
+            });
+
+            $butikkVelger.on('select2:select', function (e) {
+                const activeBrands = filterButtons
+             .filter(btn => btn.classList.contains('active'))
+             .map(btn => btn.dataset.brand);
+
+         setBrands(activeBrands);
+            });
+        });
+
+
+       // 🌍 Init ved lasting
+      applyActiveButtonsFromURL();
+    </script>
+
+
+    <div class="container mt-4">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+        {% if produkter|length < 1 %}
+            <div class="col">
+                <div class="produktkort alert alert-info" role="alert">
+                    Ingen produkter funnet
+                </div>
+            </div>
+        {% else %}
+            {% for produkt in produkter %}
+            <div class="col produkt" data-navn="{{ produkt.navn | lower }}">
+                <a href="https://www.power.no{{ produkt.url }}" class="text-decoration-none text-dark" target="_blank">
+                    <div class="card h-100 shadow produktkort" style="cursor: pointer;">
+                        <img src="{{ produkt.bilde }}" class="card-img-top produktbilde" style=" transform-origin: top center;" alt="{{ produkt.navn }}">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold produktnavn">{{ produkt.navn }}</h5>
+                            {% if produkt.rating == 0 %}
+                                <p class="mb-1 rating">Ingen rating</p>
+                            {% else %}
+                                <p class="mb-1 rating">{{ produkt.rating }}/5 ⭐</p>
+                            {% endif %}
+                            <p class="mb-2 salgsargumenter">{{ produkt.salgsargument }}</p>
+                            <h4 class="fw-bold mb-2 orange-tekst pris">{{ produkt.pris }} kr</h4>
+
+                            {% if produkt.nettlager > 100 %}
+                                <p class="text-muted mt-auto small nettlager">På nettlager: (100+) </p>
+                            {% elif produkt.nettlager > 50 %}
+                                <p class="text-muted mt-auto small nettlager">På nettlager: (50+)</p>
+                            {% elif produkt.nettlager > 10 %}
+                                <p class="text-muted mt-auto small nettlager">På nettlager: (10+)</p>
+                            {% elif produkt.nettlager == 0 %}
+                                <p class="text-muted mt-auto small nettlager">Ikke på nettlager</p>
+                            {% else %}
+                                <p class="text-muted mt-auto small nettlager">På nettlager: (<5)</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</div>
+
+    <script>
+  const sokInput = document.getElementById('produkt-sok');
+  const produktElementer = document.querySelectorAll('.produkt');
+
+  sokInput.addEventListener('input', () => {
+    const query = sokInput.value.trim().toLowerCase();
+
+    produktElementer.forEach(prod => {
+      const navn = prod.dataset.navn;
+      if (navn.includes(query)) {
+        prod.style.display = '';
+      } else {
+        prod.style.display = 'none';
+      }
+    });
+  });
+</script>
+
+{% endblock %}

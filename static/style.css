@@ -1,0 +1,80 @@
+.btn-outline-primary.active,
+.btn-outline-primary:active {
+    background-color: #0d6efd;
+    color: #fff;
+    border-color: #0d6efd;
+}
+
+.btn-outline-success.active,
+.btn-outline-success:active {
+    background-color: #198754;
+    color: #fff;
+    border-color: #198754;
+}
+
+.btn-outline-danger.active,
+.btn-outline-danger:active {
+    background-color: #dc3545;
+    color: #fff;
+    border-color: #dc3545;
+}
+
+.btn-outline-dark.active,
+.btn-outline-dark:active {
+    background-color: #212529;
+    color: #fff;
+    border-color: #212529;
+}
+
+
+.orange-bakgrunn{
+    background-color: #FF6600;
+}
+
+.orange-tekst{
+    color: #FF6600;
+}
+
+.orange-outline{
+    border-color: #FF6600;
+}
+
+.produktkort {
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.produktkort .produktbilde {
+  transition: transform 0.3s ease;
+}
+
+.produktkort .salgsargumenter {
+  transition: opacity 0.3s ease, max-height 0.3s ease;
+  overflow: hidden;
+  max-height: 100px;
+  opacity: 1;
+}
+
+.produktkort:hover .produktbilde {
+  transform: scale(1.1);
+}
+
+.produktkort:hover .salgsargumenter {
+  opacity: 0;
+  max-height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Øk høyde og font på Select2-knappen */
+.select2-container--default .select2-selection--single {
+    height: 60px; /* endre til ønsket høyde */
+    width: 140px;
+    padding: 10px 12px;
+    font-size: 1.3rem; /* evt. juster for større tekst */
+    display: flex;
+    align-items: center; /* sentrerer tekst vertikalt */
+    justify-content: center; /* sentrerer tekst horisontalt */
+    border-radius: 6px;  /* valgfritt, rundere hjørner */
+    font-weight: bold;
+}
